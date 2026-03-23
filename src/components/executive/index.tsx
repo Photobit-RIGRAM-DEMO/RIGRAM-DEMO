@@ -72,6 +72,8 @@ export default function Executive({ mode }: ExecutiveProps) {
         return '학장';
       case 'chairman':
         return '이사장';
+      case 'scp':
+        return '총학생회장';
       default:
         return role;
     }

@@ -17,31 +17,30 @@ export default async function DepartmentPage({
     .eq('id', id)
 
 return (
-        <div className="w-full flex flex-col gap-8 items-center">
+  
+<div className="w-full flex flex-col gap-8 items-center">
 
-        <section className="relative w-full max-w-screen-xl mx-auto bg-white p-5 rounded-xl md:p-10 flex justify-center">
-            
-            <div className="flex flex-col items-center gap-4 p-6 rounded-lg">
+<section className="w-full max-w-[1600px] mx-auto bg-white border border-border rounded-md p-5 md:p-10 shadow-dropdown transition"> 
+  <div className="flex flex-col items-center gap-12">
 
-            <div className="flex gap-4">
-                <div className="relative w-[380px] h-[380px] rounded-xl overflow-hidden hover:scale-105 transition">
-                    {students?.[0]?.profile_graduate && (
-                    <Image
-                        src={students[0].profile_graduate}
-                        alt="증명사진"
-                        fill
-                        sizes="380px"
-                        className="object-cover"
-                    />
-                    )}
-                </div>
-            </div>
+    {/* 반응형 이미지 1.3배 확대 */}
+    <div className="relative w-full max-w-[390px] sm:max-w-[650px] md:max-w-[910px] aspect-[4/3]">
+      {students?.[0]?.profile_graduate && (
+        <Image
+          src={students[0].profile_graduate}
+          alt="증명사진"
+          fill
+          sizes="(max-width: 640px) 390px, (max-width: 768px) 650px, 910px"
+          className="object-contain"
+        />
+      )}
+    </div>
 
-            <p className="text-center font-medium text-lg">{students?.[0]?.name}</p>
+    {/* 학생 이름 */}
+    <h1 className="text-xl md:text-2xl font-bold">{students?.[0]?.name}</h1>
 
-            </div>
-
-        </section>
-        </div>
+  </div>
+</section>
+</div>
   )
 }

@@ -17,8 +17,9 @@ const CATEGORY_OPTIONS = [
   { value: 'vice president', label: '부총장' },
   { value: 'dean', label: '학장' },
   { value: 'chairman', label: '이사장' },
+  { value: 'scp', label: '총학생회장' } // student council president
 ];
-type Category = 'president' | 'vice president' | 'dean' | 'chairman';
+type Category = 'president' | 'vice president' | 'dean' | 'chairman' | 'scp';
 
 export default function ExecutiveAddPage() {
   const router = useRouter();
