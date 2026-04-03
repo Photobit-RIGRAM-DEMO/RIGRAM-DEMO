@@ -60,7 +60,7 @@ export default function LoginPage() {
         localStorage.setItem('schoolId', users.school_id);
         localStorage.setItem('userType', users.user_type);
       } else {
-        localStorage.setItem('schoolId', users.id);
+        localStorage.setItem('schoolId', users.school_id);
         localStorage.setItem('userType', users.user_type);
       }
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
         if (!users.school_name_en) {
           router.replace('/admin/school-register');
         } else {
-          router.replace(`/admin/${users.id}`);
+          router.replace(`/admin/${users.school_id}`);
         }
       }
 
