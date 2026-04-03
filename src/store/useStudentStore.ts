@@ -40,7 +40,7 @@ export const useStudentStore = create<StudentsState>((set) => ({
     const { data, error } = await supabase
       .from('students')
       .select('*')
-      // .eq('school_id', schoolId)
+      //.eq('school_id',school_id)
       .eq('dept_id', departmentId);
 
     if (error) {

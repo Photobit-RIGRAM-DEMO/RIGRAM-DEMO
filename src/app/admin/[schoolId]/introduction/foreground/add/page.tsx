@@ -11,6 +11,7 @@ import { supabase } from '@/utils/supabase/client';
 import { Asterisk } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { transliterate } from 'transliteration';
 
 export default function ForegroundAddPage() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function ForegroundAddPage() {
   const school = useSchoolStore((state) => state.school);
 
   const slugify = (text: string) =>
-    text
+    transliterate(text) // 👈 한글 → 영어 변환
       .toLowerCase()
       .trim()
       .replace(/[\s\W-]+/g, '-');
@@ -38,8 +39,12 @@ export default function ForegroundAddPage() {
   const uploadFile = useCallback(
     async (file: File) => {
       const schoolName = slugify(school?.school_name_en || '');
+      
+      const fileExt = file.name.split('.').pop();
+      const baseName = file.name.replace(/\.[^/.]+$/, '');
+      const safeFileName = `${slugify(baseName)}.${fileExt}`;
 
-      const filePath = `${schoolName}/${file.name}`;
+      const filePath = `${schoolName}/${safeFileName}`;
 
       const { error } = await supabase.storage
         .from('foregrounds')

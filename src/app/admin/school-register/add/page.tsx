@@ -12,6 +12,7 @@ import { supabase } from '@/utils/supabase/client';
 import { Asterisk, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import { transliterate } from 'transliteration';
 
 export default function SchoolAddPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function SchoolAddPage() {
   const GO_PREV_STEP = () => setCurrentStep('basic');
 
   const slugify = (text: string) =>
-    text
+    transliterate(text) // 👈 한글 → 영어 변환
       .toLowerCase()
       .trim()
       .replace(/[\s\W-]+/g, '-');

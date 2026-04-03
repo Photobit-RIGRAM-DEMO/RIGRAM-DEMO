@@ -13,6 +13,7 @@ import { supabase } from '@/utils/supabase/client';
 import { Asterisk } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
+import { transliterate } from 'transliteration';
 
 export default function DepartmentAddPage() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function DepartmentAddPage() {
   const addCollege = useCollegeStore((state) => state.addCollege);
 
   const slugify = (text: string) =>
-    text
+    transliterate(text) // 👈 한글 → 영어 변환
       .toLowerCase()
       .trim()
       .replace(/[\s\W-]+/g, '-');
@@ -79,7 +80,13 @@ export default function DepartmentAddPage() {
       if (imgUrl instanceof File) {
         const schoolName = slugify(school?.school_name_en ?? '');
         const deptName = slugify(deptNameEn);
-        const filePath = `${schoolName}/${deptName}/${imgUrl.name}`;
+
+      // 파일명 slugify (확장자 유지)
+      const fileExt = imgUrl.name.split('.').pop();
+      const baseName = imgUrl.name.replace(/\.[^/.]+$/, '');
+      const safeFileName = `${slugify(baseName)}.${fileExt}`;
+
+      const filePath = `${schoolName}/${deptName}/${safeFileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('dept-img')

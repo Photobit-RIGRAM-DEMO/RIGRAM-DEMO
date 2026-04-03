@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabase/client';
 import { Calendar, GraduationCap, Mail, PencilLine, Phone, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useParams, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo } from 'react';
 
 const MENU_LIST = [
@@ -24,17 +24,18 @@ const MENU_LIST = [
     url: 'graduate',
     img_url: '/images/menu02.png',
   },
-  {
-    id: '2',
-    title: '단체 사진',
-    subTitle: '학과별 단체, 사진 관리',
-    url: 'photo',
-    img_url: '/images/menu03.png',
-  },
+  // {
+    // id: '2',
+    // title: '단체 사진',
+    // subTitle: '학과별 단체, 사진 관리',
+    // url: 'photo',
+    // img_url: '/images/menu03.png',
+  // },
   {
     id: '3',
     title: '학과 소개 관리',
-    subTitle: '전경 / 연혁 / 상진 / 운영진',
+    subTitle: '전경 / 연혁 / 운영진',
+    // subTitle: '전경 / 연혁 / 상징 / 운영진',
     url: 'introduction?tab=foreground',
     img_url: '/images/menu04.png',
   },
@@ -42,32 +43,21 @@ const MENU_LIST = [
 
 export default function SchoolMainPage() {
   const pathname = usePathname();
-
-  const { schoolId } = useParams<{ schoolId: string }>();
   const fetchSchool = useSchoolStore((state) => state.fetchSchool);
   const isLoading = useSchoolStore((state) => state.isLoading);
   const school = useSchoolStore((state) => state.school);
 
-  // 인증 요청 최소화
   const getAuthData = useCallback(async () => {
     try {
       const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('사용자 정보를 가져오는데 실패했습니다. :', error);
-        return;
-      }
+      if (error) return console.error(error);
       const user = data?.session?.user;
-      if (user) {
-        await fetchSchool(user.id);
-      } else {
-        console.warn('로그인이 필요합니다.');
-      }
-    } catch (error) {
-      console.error('사용자 인증 요청 중 오류가 발생했습니다. :', error);
+      if (user) await fetchSchool(user.id);
+    } catch (err) {
+      console.error(err);
     }
   }, [fetchSchool]);
 
-  // 최초 1회만 호출
   useEffect(() => {
     if (!school) getAuthData();
   }, [getAuthData, school]);
@@ -77,35 +67,19 @@ export default function SchoolMainPage() {
       { id: '0', icon: <User />, title: '담당자', content: school?.manager_name ?? '-' },
       { id: '1', icon: <Mail />, title: '이메일', content: school?.manager_email ?? '-' },
       { id: '2', icon: <Phone />, title: '연락처', content: school?.manager_contact ?? '-' },
-      {
-        id: '3',
-        icon: <Calendar />,
-        title: '생성일',
-        content: school?.created_at?.slice(0, 10) ?? '-',
-      },
-      {
-        id: '4',
-        icon: <Calendar />,
-        title: '수정일',
-        content: school?.updated_at?.slice(0, 10) ?? '-',
-      },
+      { id: '3', icon: <Calendar />, title: '생성일', content: school?.created_at?.slice(0, 10) ?? '-' },
+      { id: '4', icon: <Calendar />, title: '수정일', content: school?.updated_at?.slice(0, 10) ?? '-' },
     ],
     [school]
   );
 
   if (!school || isLoading) {
     return (
-      <div
-        className="flex justify-center items-center min-h-[400px]"
-        role="status"
-        aria-live="polite"
-      >
+      <div className="flex justify-center items-center min-h-[400px]" role="status" aria-live="polite">
         <span className="text-gray-600">학교 정보를 불러오는 중 입니다..</span>
       </div>
     );
   }
-
-  if (schoolId !== school?.id) return notFound();
 
   const schoolLogoUrl =
     school.school_img_url instanceof File
@@ -114,8 +88,6 @@ export default function SchoolMainPage() {
 
   return (
     <section className="flex flex-col justify-center items-center gap-5 w-full md:flex-row md:gap-4">
-      <h1 className="sr-only">학교 정보 메인 페이지 - 학교 등록이 되어있을 경우</h1>
-
       {/* 좌측 학교 정보 */}
       <article className="w-full md:w-[532px] h-full flex flex-col gap-6 bg-white p-6 md:px-18 shadow-dropdown md:gap-13 md:pt-[52px] md:pb-[120px] rounded-xl">
         <div className="flex flex-col items-center gap-4 md:gap-6">
@@ -132,12 +104,8 @@ export default function SchoolMainPage() {
               </div>
             </div>
             <figcaption className="flex flex-col items-center gap-1">
-              <h3 className="text-20 md:text-24 font-semibold text-gray-900">
-                {school?.school_name}
-              </h3>
-              <span className="text-16 md:text-20 font-regular text-gray-700">
-                {school?.school_name_en}
-              </span>
+              <h3 className="text-20 md:text-24 font-semibold text-gray-900">{school?.school_name}</h3>
+              <span className="text-16 md:text-20 font-regular text-gray-700">{school?.school_name_en}</span>
             </figcaption>
           </figure>
           <div className="flex items-center text-16 md:text-18 text-gray-800 gap-1">
@@ -170,40 +138,51 @@ export default function SchoolMainPage() {
           </dl>
         </div>
       </article>
+
       {/* 우측 메뉴 */}
-      <nav
-        className="w-full h-full flex flex-col justify-center items-center gap-4 md:w-[532px] md:grid md:grid-cols-2"
-        aria-label="학교 관리 주요 메뉴"
-      >
-        <h2 className="sr-only">주요 관리 메뉴</h2>
-        {MENU_LIST.map((menu) => (
-          <Link
-            key={menu.id}
-            href={`${pathname}/${menu.url}`}
-            prefetch={false}
-            shallow
-            className="w-full flex flex-row justify-center gap-4 items-center bg-primary-200 px-6 py-6 shadow-dropdown rounded-xl md:flex-col md:gap-12 md:py-21 hover:bg-primary-300 hover:outline hover:outline-primary-700 focus:bg-primary-300 focus:outline-primary-700 active:bg-primary-300 active:outline-primary-700"
-            aria-label={`${menu.title}의 ${menu.subTitle} 관리 페이지로 이동`}
-          >
-            <div className="flex flex-col md:flex-col-reverse items-center justify-center gap-0.5">
-              <h3 className="text-20 md:text-22 text-gray-900 font-semibold">{menu.title}</h3>
-              <p className="text-14 md:text-16 text-gray-600 font-semibold text-center">
-                {menu.subTitle}
-              </p>
-            </div>
-            <div className="relative flex justify-center items-center w-20 h-20 md:w-[120px] md:h-[120px]">
-              <Image
-                src={menu.img_url}
-                alt={menu.title}
-                fill
-                priority
-                sizes="(max-width: 768px) 80px, 120px"
-                className="object-contain"
-              />
-            </div>
+     {/* 우측 메뉴 + 버튼 컨테이너 */}
+      <div className="w-full md:w-[532px] flex flex-col gap-4">
+        <nav
+          className="w-full h-full flex flex-col justify-between items-center gap-4 md:grid md:grid-cols-2"
+          aria-label="학교 관리 주요 메뉴"
+        >
+          <h2 className="sr-only">주요 관리 메뉴</h2>
+
+          {/* 메뉴 리스트 */}
+          {MENU_LIST.map((menu) => (
+            <Link
+              key={menu.id}
+              href={`${pathname}/${menu.url}`}
+              prefetch={false}
+              shallow
+              className="w-full flex flex-row justify-center gap-4 items-center bg-primary-200 px-6 py-6 shadow-dropdown rounded-xl md:flex-col md:gap-12 md:py-21 hover:bg-primary-300 hover:outline hover:outline-primary-700 focus:bg-primary-300 focus:outline-primary-700 active:bg-primary-300 active:outline-primary-700"
+              aria-label={`${menu.title}의 ${menu.subTitle} 관리 페이지로 이동`}
+            >
+              <div className="flex flex-col md:flex-col-reverse items-center justify-center gap-0.5">
+                <h3 className="text-20 md:text-22 text-gray-900 font-semibold">{menu.title}</h3>
+                <p className="text-14 md:text-16 text-gray-600 font-semibold text-center">{menu.subTitle}</p>
+              </div>
+              <div className="relative flex justify-center items-center w-20 h-20 md:w-[120px] md:h-[120px]">
+                <Image
+                  src={menu.img_url}
+                  alt={menu.title}
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 80px, 120px"
+                  className="object-contain"
+                />
+              </div>
+            </Link>
+          ))}
+        </nav>
+
+        {/* 우측 메뉴 아래 버튼 */}
+          <Link href={`/student/${school.id}`}>
+            <Button className="w-full bg-white text-gray-900 font-semibold px-6 py-3 rounded-xl shadow hover:shadow-lg transition">
+              앨범 페이지로 이동
+            </Button>
           </Link>
-        ))}
-      </nav>
+      </div>
     </section>
   );
 }

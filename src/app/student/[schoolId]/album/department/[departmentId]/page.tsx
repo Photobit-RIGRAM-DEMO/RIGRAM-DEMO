@@ -19,6 +19,12 @@ export default async function DepartmentPage({
     .eq('id', departmentId)
     .single()
 
+    const { data: college } = await supabase
+    .from('colleges')
+    .select('*')
+    .eq('id', department.college_id)
+    .single()
+
   // staffs 중 departmentId 같은 것
   const { data: staffs } = await supabase
     .from('staffs')
@@ -53,7 +59,7 @@ return (
             {staffs?.map((staff) => (
               <li key={staff.id}>
                 <Link
-                  href={`/department/staff/${staff.id}`}
+                  href={`/student/${college?.school_id}/album/department/staff/${staff.id}`}
                   className="block p-4 border border-border rounded-md hover:outline hover:outline-primary-700 transition"
                   aria-label={`${staff.name} 상세 페이지로 이동`}
                 >
@@ -88,7 +94,7 @@ return (
             {students?.map((student) => (
               <li key={student.id}>
                 <Link
-                  href={`/department/student/${student.id}`}
+                  href={`/student/${college?.school_id}/album/department/student/${student.id}`}
                   className="block p-4 border border-border rounded-md text-center hover:outline hover:outline-primary-700 transition"
                   aria-label={`${student.name} 상세 페이지로 이동`}
                 >

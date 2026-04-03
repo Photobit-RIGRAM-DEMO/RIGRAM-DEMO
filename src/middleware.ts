@@ -21,8 +21,8 @@ export function middleware(request: NextRequest) {
   }
 
   // Student 페이지 보호
-  if (path.startsWith('/student')) {
-    if (userType !== 'student') {
+  if (path.startsWith('/student' )) {
+    if (userType !== 'student' && userType !== 'admin') {
       return NextResponse.redirect(new URL('/404', request.url));
     }
   }

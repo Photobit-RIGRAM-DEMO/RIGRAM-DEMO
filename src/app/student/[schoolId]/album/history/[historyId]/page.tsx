@@ -16,6 +16,7 @@ export default async function DepartmentPage({
     .from('history')
     .select('*')
     .eq('school_id', schoolId)
+    .order('date', { ascending: false });
 
 return (
 <div className="w-full flex flex-col items-center gap-8 px-4 md:px-10 mt-6">

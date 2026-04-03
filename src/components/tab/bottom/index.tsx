@@ -8,7 +8,7 @@ const BOTTOM_TAB = {
     { id: '0', title: '기본 정보', url: 'detail' },
     { id: '1', title: '소개', url: 'intro' },
     { id: '2', title: '교직원', url: 'staff' },
-    { id: '3', title: '학생회', url: 'union' },
+    //{ id: '3', title: '학생회', url: 'union' },
   ],
   organization: [
     { id: '0', title: '전체', url: 'all' },
@@ -20,7 +20,7 @@ const BOTTOM_TAB = {
   school_intro: [
     { id: '0', title: '전경', url: 'foreground' },
     { id: '1', title: '연혁', url: 'history' },
-    { id: '2', title: '상징', url: 'symbol' },
+    //{ id: '2', title: '상징', url: 'symbol' },
     { id: '3', title: '임원진', url: 'executive' },
   ],
 };

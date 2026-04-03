@@ -25,7 +25,7 @@ return (
       {/* 이미지 영역 */}
 <div className="flex gap-4 flex-wrap justify-center">
 
-  <Link href={`/department/student/${students?.[0]?.id}/image/graduate`}>
+  <Link href={`/student/${students?.[0]?.school_id}/album/department/student/${students?.[0]?.id}/graduate`}>
     <div className="relative w-[325px] sm:w-[390px] md:w-[494px] aspect-square rounded-xl overflow-hidden transition-shadow duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
       {students?.[0]?.profile_graduate && (
         <div className="w-full h-full transition-transform duration-300 hover:-translate-y-1">
@@ -41,7 +41,7 @@ return (
     </div>
   </Link>
 
-  <Link href={`/department/student/${students?.[0]?.id}/image/default`}>
+  <Link href={`/student/${students?.[0]?.school_id}/album/department/student/${students?.[0]?.id}/default`}>
     <div className="relative w-[325px] sm:w-[390px] md:w-[494px] aspect-square rounded-xl overflow-hidden transition-shadow duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
       {students?.[0]?.profile_default && (
         <div className="w-full h-full transition-transform duration-300 hover:-translate-y-1">

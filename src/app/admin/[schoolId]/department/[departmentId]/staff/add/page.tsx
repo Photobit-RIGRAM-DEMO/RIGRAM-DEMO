@@ -12,20 +12,7 @@ import { supabase } from '@/utils/supabase/client';
 import { Asterisk } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-
-const CATEGORY_OPTIONS = [
-  { value: 'professor', label: '교수' },
-  { value: 'associate professor', label: '부교수' },
-  { value: 'assistant professor', label: '조교수' },
-  { value: 'instructor', label: '강사' },
-  { value: 'assistant', label: '조교' },
-];
-type Category =
-  | 'professor'
-  | 'associate professor'
-  | 'assistant professor'
-  | 'instructor'
-  | 'assistant';
+import { transliterate } from 'transliteration';
 
 export default function StaffAddPage() {
   const router = useRouter();
@@ -35,7 +22,7 @@ export default function StaffAddPage() {
   const departmentId = segments[3];
 
   const [deptNameEn, setDeptNameEn] = useState('');
-  const [category, setCategory] = useState<Category>('professor');
+  const [category, setCategory] = useState(''); // 텍스트 입력으로 변경
   const [name, setName] = useState('');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
 
@@ -45,20 +32,19 @@ export default function StaffAddPage() {
   const fetchDepartmentById = useDepartmentStore((state) => state.fetchDepartmentById);
 
   const slugify = (text: string) =>
-    text
+    transliterate(text) // 👈 한글 → 영어 변환
       .toLowerCase()
       .trim()
       .replace(/[\s\W-]+/g, '-');
 
+  // 부서 정보 로드
   useEffect(() => {
     if (!departmentId) return;
 
     const loadDepartment = async () => {
       try {
         const dept = await fetchDepartmentById(departmentId);
-        if (dept?.name_en) {
-          setDeptNameEn(dept.name_en);
-        }
+        if (dept?.name_en) setDeptNameEn(dept.name_en);
       } catch (error) {
         console.error('Department 조회 실패:', error);
       }
@@ -67,37 +53,43 @@ export default function StaffAddPage() {
     loadDepartment();
   }, [departmentId, fetchDepartmentById]);
 
-  /* 파일 업로드 (Supabase Storage) */
+  // 파일 업로드
   const uploadFile = useCallback(
-    async (file: File, folder: Category) => {
+    async (file: File, folder: string) => {
       const schoolName = slugify(schoolNameEn);
       const departmentName = slugify(deptNameEn);
 
-      const filePath = `${schoolName}/${departmentName}/${folder}/${file.name}`;
+      // 파일명 slugify
+      const fileExt = file.name.split('.').pop();
+      const baseName = file.name.replace(/\.[^/.]+$/, '');
+      const safeFileName = `${slugify(baseName)}.${fileExt}`;
+
+      const filePath = `${schoolName}/${departmentName}/${slugify(folder)}/${safeFileName}`;
 
       const { error } = await supabase.storage
         .from('staff-profiles')
         .upload(filePath, file, { upsert: true });
+
       if (error) {
-        console.error(`프로필 업로드 실패:`, error.message);
-        alert(`프로필 업로드 중 오류가 발생했습니다.`);
+        console.error('프로필 업로드 실패:', error.message);
+        alert('프로필 업로드 중 오류가 발생했습니다.');
         return null;
       }
 
       const { data } = supabase.storage.from('staff-profiles').getPublicUrl(filePath);
-
       return data.publicUrl ?? null;
     },
     [schoolNameEn, deptNameEn]
   );
 
+  // 교직원 추가
   const handleAddProfile = useCallback(
     () => async () => {
-      if (!category) {
-        alert('카테고리를 선택해 주세요.');
+      if (!category.trim()) {
+        alert('카테고리를 입력해 주세요.');
         return;
       }
-      if (!name) {
+      if (!name.trim()) {
         alert('이름을 입력해 주세요.');
         return;
       }
@@ -115,9 +107,8 @@ export default function StaffAddPage() {
         alert('교직원이 성공적으로 추가되었습니다.');
         router.replace(`/admin/${schoolId}/department/${departmentId}?tab=staff`);
       } catch (error) {
-        console.error('교직원 추가 중 오류가 발생 :', error);
+        console.error('교직원 추가 중 오류:', error);
         alert('교직원 추가 중 오류가 발생했습니다.');
-        return;
       }
     },
     [addStaffProfile, schoolId, departmentId, name, category, mediaFile, router, uploadFile]
@@ -143,9 +134,11 @@ export default function StaffAddPage() {
             </Button>
           </div>
         </header>
+
         <span className="inline-block w-full h-px bg-gray-200 my-8" aria-hidden="true"></span>
+
         <form className="flex flex-col gap-6">
-          {/* 카테고리 선택 */}
+          {/* 카테고리 입력 */}
           <div className="flex justify-start items-center w-full">
             <label
               htmlFor="category"
@@ -155,22 +148,19 @@ export default function StaffAddPage() {
               <Asterisk className="text-red w-4 h-4" />
             </label>
             <div className="flex-1 min-w-0">
-              <select
+              <Input
+                purpose="text"
                 id="category"
+                placeholder="카테고리를 입력해 주세요 (예: 교수, 강사 등)"
                 className="w-full"
                 value={category}
-                onChange={(e) => setCategory(e.target.value as Category)}
-              >
-                {CATEGORY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-                교직원 선택
-              </select>
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              />
             </div>
           </div>
-          {/* 이름 업로드 */}
+
+          {/* 이름 입력 */}
           <div className="flex justify-start items-center w-full">
             <label
               htmlFor="name"
@@ -187,10 +177,11 @@ export default function StaffAddPage() {
                 className="w-full"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required={true}
+                required
               />
             </div>
           </div>
+
           {/* 프로필 사진 업로드 */}
           <div className="flex justify-start items-start">
             <label

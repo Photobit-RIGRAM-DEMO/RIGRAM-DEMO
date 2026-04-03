@@ -13,6 +13,7 @@ import { supabase } from '@/utils/supabase/client';
 import { Asterisk } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { transliterate } from 'transliteration';
 
 export default function GraduateAddPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function GraduateAddPage() {
   const schoolNameEn = school?.school_name_en || '';
 
   const slugify = (text: string) =>
-    text
+    transliterate(text) // 👈 한글 → 영어 변환
       .toLowerCase()
       .trim()
       .replace(/[\s\W-]+/g, '-');
@@ -70,8 +71,13 @@ export default function GraduateAddPage() {
     const schoolName = slugify(schoolNameEn);
     const deptName = slugify(deptNameEn);
     const studentName = slugify(studentNameEn);
+    
+    // 파일명 slugify (확장자 유지)
+    const fileExt = file.name.split('.').pop();
+    const baseName = file.name.replace(/\.[^/.]+$/, '');
+    const safeFileName = `${slugify(baseName)}.${fileExt}`;
 
-    const filePath = `${schoolName}/${deptName}/${studentName}/${folder}/${file.name}`;
+    const filePath = `${schoolName}/${deptName}/${studentName}/${folder}/${safeFileName}`;
 
     const { error } = await supabase.storage
       .from('student-profiles')
@@ -167,9 +173,10 @@ export default function GraduateAddPage() {
                 required={true}
                 max={80}
                 onChange={(e) => {
-                  setStudentName(e.target.value);
-                  const onlyKorean = e.target.value.replace(/[^ㄱ-ㅎ가-힣ㆍ ᆢ]/gi, '');
-                  setStudentName(onlyKorean);
+                  const value = e.target.value;
+                  // 한글과 숫자만 허용, 띄어쓰기 제외
+                  const onlyKoreanAndNumbers = value.replace(/[^ㄱ-ㅎ가-힣0-9ㆍᆢ]/gi, '');
+                  setStudentName(onlyKoreanAndNumbers);
                 }}
               />
             </div>

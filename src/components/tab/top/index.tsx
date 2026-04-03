@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 const TOP_TAB = [
   { id: '0', title: '학과 관리', url: 'department' },
   { id: '1', title: '졸업생 관리', url: 'graduate' },
-  { id: '2', title: '단체 사진', url: 'photo' },
+  //{ id: '2', title: '단체 사진', url: 'photo' },
   { id: '3', title: '학교 소개 관리', url: 'introduction?tab=foreground' },
 ];
 

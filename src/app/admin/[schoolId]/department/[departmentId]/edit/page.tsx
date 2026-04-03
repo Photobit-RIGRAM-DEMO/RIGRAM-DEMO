@@ -14,6 +14,7 @@ import { supabase } from '@/utils/supabase/client';
 import { Asterisk } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { transliterate } from 'transliteration';
 
 export default function DepartmentEditPage() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function DepartmentEditPage() {
   const fetchCollegeById = useCollegeStore((state) => state.fetchCollegeById);
 
   const slugify = (text: string) =>
-    text
+    transliterate(text) // 👈 한글 → 영어 변환
       .toLowerCase()
       .trim()
       .replace(/[\s\W-]+/g, '-');
@@ -108,10 +109,14 @@ export default function DepartmentEditPage() {
       if (imgUrl instanceof File) {
         const schoolName = slugify(school?.school_name_en ?? '');
         const deptName = slugify(deptNameEn);
-        const fileName = imgUrl.name;
+
+
+        const fileExt = imgUrl.name.split('.').pop();
+        const baseName = imgUrl.name.replace(/\.[^/.]+$/, '');
+        const safeFileName = `${slugify(baseName)}.${fileExt}`;
 
         // 폴더 구조를 반영
-        const filePath = `${schoolName}/${deptName}/${fileName}`;
+        const filePath = `${schoolName}/${deptName}/${safeFileName}`;
 
         // 같은 경로에 파일이 이미 있으면 덮어쓰기 (upsert)
         const { error: uploadError } = await supabase.storage
